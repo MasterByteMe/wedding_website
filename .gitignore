@@ -1,0 +1,27 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build output
+/dist
+/build
+
+# MacOS system files (optional, if you are using macOS)
+.DS_Store
+
+# IDE/editor specific files (optional)
+.vscode/
+.idea/
+
+# Coverage directory (for testing)
+coverage/
+
+# Optional: If using package-lock.json or yarn.lock, and you don't want to commit it
+package-lock.json
+yarn.lock
