@@ -13,6 +13,15 @@ export const createGuest = async (req, res) => {
       });
     }
 
+    // 🔍 Check for existing guest with the same email
+    const existingGuest = await Guest.findOne({ email });
+
+    if (existingGuest) {
+      return res.status(409).json({
+        message: "This email has already been used to RSVP.",
+      });
+    }
+
     const guest = new Guest({
       firstname,
       lastname,
