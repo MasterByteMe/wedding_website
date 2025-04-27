@@ -1,4 +1,3 @@
-// guestController.js
 import Guest from "../models/Guest.js";
 
 // ✅ CREATE a new guest (public - RSVP form)
@@ -13,8 +12,11 @@ export const createGuest = async (req, res) => {
       });
     }
 
-    // 🔍 Check for existing guest with the same email
-    const existingGuest = await Guest.findOne({ email });
+    // ✨ Normalize email
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // 🔍 Check for existing guest with the same normalized email
+    const existingGuest = await Guest.findOne({ email: normalizedEmail });
 
     if (existingGuest) {
       return res.status(409).json({
@@ -22,19 +24,28 @@ export const createGuest = async (req, res) => {
       });
     }
 
+    // 📝 Create new guest
     const guest = new Guest({
-      firstname,
-      lastname,
-      email,
-      mobile,
-      message,
+      firstname: firstname.trim(),
+      lastname: lastname.trim(),
+      email: normalizedEmail,
+      mobile: mobile?.trim(),
+      message: message?.trim(),
       rsvp_status,
     });
 
     await guest.save();
-    res.status(201).json({ message: "RSVP saved successfully!" });
+
+    return res.status(201).json({ message: "RSVP saved successfully!" });
   } catch (err) {
-    res.status(500).json({
+    // 🛑 Handle MongoDB duplicate error directly (fallback)
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return res.status(409).json({
+        message: "This email has already been used to RSVP.",
+      });
+    }
+
+    return res.status(500).json({
       message: "Failed to save RSVP",
       error: err.message,
     });
@@ -45,10 +56,6 @@ export const createGuest = async (req, res) => {
 export const getGuests = async (req, res) => {
   try {
     const guests = await Guest.find().sort({ createdAt: -1 });
-
-    // Optional: limit fields returned to frontend
-    // const guests = await Guest.find({}, "name email rsvp_status createdAt");
-
     res.status(200).json(guests);
   } catch (err) {
     res.status(500).json({
